@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width-device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="id=edge" />
+    <meta name="theme-color" content="#007bff" />
+    <meta
+      property="og:image"
+      content="https://files.dulliag.de/web/images/logo.jpg"
+    />
+    <meta name="description" content="Web-based shoutbox" />
+    <meta property="og:type" content="website" />
+
+    <title>ShoutBox</title>
+    <link
+      rel="icon"
+      type="image/jpeg"
+      sizes="500x500"
+      href="https://files.dulliag.de/web/images/logo.jpg"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+      integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+      integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="./assets/css/style.css" />
+  </head>
+  <body id="index">
+    <div id="wrapper" class="d-flex flex-column">
+      <nav id="navbar-top" class="navbar sticky-top navbar-expand-xl">
+        <a class="navbar-brand" href="index.php">ShoutBox</a>
+        <button
+          class="navbar-toggler"
+          data-toggle="collapse"
+          data-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+        >
+          <div class="menu-btn">
+            <div class="btn-line"></div>
+            <div class="btn-line"></div>
+            <div class="btn-line"></div>
+          </div>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a
+                href="https://github.com/tklein1801/ShoutBox/blob/master/README.md"
+                class="nav-link"
+                >About</a
+              >
+            </li>
+            <li class="nav-item">
+              <a href="https://github.com/tklein1801/ShoutBox/" class="nav-link"
+                >GitHub</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                href="https://github.com/tklein1801/ShoutBox/issues"
+                class="nav-link"
+                >Issues</a
+              >
+            </li>
+          </ul>
+        </div>
+      </nav>
+      <!-- ./navbar -->
+
+      <div class="content">
+        <div class="d-flex justify-content-center">
+          <div id="shoutbox" class="shoutbox">
+            <div class="shoutbox-header">
+              <h5 class="title">ShoutBox</h5>
+            </div>
+            <div id="messages" class="shoutbox-body">
+              <!-- Retrieve messages via JavaScript from Firebase -->
+            </div>
+
+            <div class="shoutbox-footer">
+              <form id="message-form">
+                <div class="input-group mb-3">
+                  <input
+                    type="text"
+                    id="msg-inp"
+                    class="form-control border-0"
+                    placeholder="Type your message..."
+                  />
+                  <button type="submit" class="btn btn-outline-primary">
+                    <i class="far fa-paper-plane"></i>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <!-- ./shoutbox -->
+        </div>
+      </div>
+      <!-- ./content-->
+
+      <footer class="d-flex justify-content-center bg-primary">
+        <p>
+          Made with <i class="fas fa-heart text-danger"></i> by
+          <a href="https://github.com/tklein1801">tklein1801</a>
+        </p>
+      </footer>
+      <!-- /footer -->
+    </div>
+    <!-- ./wrapper -->
+
+    <!-- jQuery v3.4.1 -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-database.js"></script>
+    <script src="./assets/js/shoutbox.js"></script>
+    <script src="https://files.dulliag.de/web/js/cookie.js"></script>
+
+    <!-- This page scripts -->
+    <script>
+      // Toggle hamburger
+      let active = false;
+      const hamburger = document.querySelector(".navbar-toggler");
+      hamburger.addEventListener("click", function () {
+        const navbar = document.querySelector("#navbar");
+        const btn = document.querySelector(".menu-btn");
+        if (!active) {
+          btn.classList.add("active");
+          active = true;
+        } else {
+          btn.classList.remove("active");
+          active = false;
+        }
+      });
+
+      /**
+       * The user only need to submit an username to write and submit an message
+       * If the player hasn't set an username an modal will show up with an input
+       */
+      //const ls = localStorage;
+      const username = new Cookie().get("dag_shoubox");
+      //const username = ls.getItem("dag_shoutbox");
+      if (username == null) {
+        const username = prompt("Enter your username...");
+        if (username != null && username != "") {
+          new Cookie().set("dag_shoutbox", username);
+          //document.cookie = `dag_shoutbox=${username}`;
+          //ls.setItem("dag_shoutbox", username);
+        }
+      }
+
+      // Get messages
+      const sb = new ShoutBox();
+      sb.getMessages()
+        .then((value) => {
+          const output = document.querySelector("#shoutbox #messages");
+          if (value != null) {
+            for (const key in value) {
+              const msg = value[key];
+              const date = new Date(msg.postetAt);
+              output.innerHTML =
+                `<div id="msg${key}" class="item"><img class="avatar rounded-circle" src="https://files.dulliag.de/web/images/logo.jpg"/> <span class="username">${
+                  msg.username
+                }<small class="date"> at ${date.getHours()}:${date.getMinutes()} | ${date.getDate()}.${
+                  date.getMonth() + 1
+                }.${date.getFullYear()}</small></span><p class="message">${
+                  msg.message
+                }</p><a href="#" class="delete" onclick="js:sb.deleteMessage('${key}')"><i class="fas fa-trash-alt"></i></a></div>` +
+                output.innerHTML;
+            }
+          } else {
+            output.innerHTML = `<div class="item"><p class="message text-center">There are no messages</p></div>`;
+          }
+        })
+        .then(() => {
+          firebase
+            .database()
+            .ref("messages")
+            .on("child_added", (snapshot) => {
+              // Check if this is a new message
+              const msg = document.querySelector(
+                `#shoutbox #msg${snapshot.key}`
+              );
+              const output = document.querySelector("#shoutbox #messages");
+
+              if (msg == null) {
+                const data = snapshot.val();
+                const date = new Date(data.postetAt);
+                output.innerHTML =
+                  `<div id="msg${
+                    snapshot.key
+                  }" class="item"><img class="avatar rounded-circle" src="https://files.dulliag.de/web/images/logo.jpg"/> <span class="username">${
+                    data.username
+                  }<small class="date"> at ${date.getHours()}:${date.getMinutes()} | ${date.getDate()}.${
+                    date.getMonth() + 1
+                  }.${date.getFullYear()}</small></span><p class="message">${
+                    data.message
+                  }</p><a href="#" class="delete" onclick="js:sb.deleteMessage('${
+                    snapshot.key
+                  }')"><i class="fas fa-trash-alt"></i></a></div>` +
+                  output.innerHTML;
+              }
+            });
+
+          firebase
+            .database()
+            .ref("messages")
+            .on("child_removed", (snapshot) => {
+              document
+                .querySelector(`#shoutbox #msg${snapshot.key}`)
+                .setAttribute("style", "display: none;");
+            });
+        })
+        .catch((error) => {
+          console.error("[ShouBox] ", error);
+        });
+
+      // Post new message
+      document
+        .querySelector("#message-form")
+        .addEventListener("submit", (e) => {
+          e.preventDefault();
+          const username = new Cookie().get("dag_shoutbox");
+          //const username = ls.getItem("dag_shoutbox");
+          const message = document.querySelector("#shoutbox #msg-inp").value;
+          sb.addMessage(username, message)
+            .then(() => {
+              document.querySelector("#shoutbox #msg-inp").value = "";
+            })
+            .catch((error) => {
+              console.error("[ShoutBox] ", error);
+            });
+        });
+    </script>
+  </body>
+</html>
